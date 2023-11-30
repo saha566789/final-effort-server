@@ -28,7 +28,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const categoryCollection = client.db("inventoryDB").collection("category");
     const serverCollection = client.db("inventoryDB").collection("server");
     const menuCollection = client.db("inventoryDB").collection("menu");
@@ -137,10 +137,12 @@ async function run() {
    
  
   //  menu
-  // app.get('/menu', async (req, res) => {
-  //   const result = await menuCollection.find().toArray();
-  //   res.send(result);
-  // });
+  app.get('/menu/:id', async (req, res) => {
+    const id = req.params.id
+    const query = {_id : new ObjectId(id)}
+    const result = await menuCollection.findOne(query);
+    res.send(result);
+  });
 
   app.post('/menu', async (req, res) => {
     const menuItem = req.body;
@@ -168,15 +170,16 @@ async function run() {
     const filter = { _id: new ObjectId(id) }
     const updatedDoc = {
       $set: {
-        name: item.name,
+        // name: item.name,
         
-        quantity:item.quantity,
-        location: item.location,
-        margin: item.margin,
-        price: item.price,
-        discount: item.discount,
-        description: item.description,
-        image: item.image
+        // quantity:item.quantity,
+        // location: item.location,
+        // margin: item.margin,
+        // price: item.price,
+        // discount: item.discount,
+        // description: item.description,
+        // image: item.image
+        ...item
       }
     }
 
@@ -322,6 +325,7 @@ app.get('/sales',async (req, res)=>{
 
   const email = req.query.email;
   const query = {email: email}
+ 
   const result = await salesCollection.find(query).toArray()
   res.send(result)
 })
@@ -339,16 +343,23 @@ app.get('/sales', async (req, res) => {
   res.send(result);
 })
 
-
+app.get('/sales', async (req, res) => {
+  const email = req.query.email;
+  const query = email ? { email: email } : {};
+  
+  const sales = await salesCollection.find(query).sort({ soldDate: -1 }).toArray();
+  res.send(sales);
+});
 
 app.get('/salesCount', async (req, res) => {
   const count = await salesCollection.estimatedDocumentCount();
   res.send({ count });
 })
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
+  //   await client.db("admin").command({ ping: 1 });
+  //   console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } 
+  finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
   }
